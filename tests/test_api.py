@@ -49,6 +49,23 @@ test_endpoint(
     },
 )
 test_endpoint(
+    "POST Config Validate & Generator",
+    f"{BASE_URL}/api/config/validate",
+    method="POST",
+    payload={
+        "base_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "task": "sft",
+        "stream_layers": True,
+        "quantization": "nf4",
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "batch_size": 1,
+        "learning_rate": 2e-4,
+        "epochs": 3,
+        "dataset_path": "./data/train.jsonl"
+    },
+)
+test_endpoint(
     "POST Chat (Offline graceful handling)",
     f"{BASE_URL}/api/chat/ollama",
     method="POST",

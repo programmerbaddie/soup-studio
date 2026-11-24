@@ -404,7 +404,107 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { copyCliCommandBtn.textContent = "📋 Copy CLI Command"; }, 2000);
   });
 
-  // --- 6. Recipes Tab Renderer ---
+  // --- 6. Visual Config Studio Controller ---
+  const cfgBaseModel = document.getElementById("cfg-base-model");
+  const cfgTask = document.getElementById("cfg-task");
+  const cfgQuant = document.getElementById("cfg-quant");
+  const cfgStreamLayers = document.getElementById("cfg-stream-layers");
+  const cfgLoraR = document.getElementById("cfg-lora-r");
+  const cfgLoraAlpha = document.getElementById("cfg-lora-alpha");
+  const cfgRVal = document.getElementById("cfg-r-val");
+  const cfgAlphaVal = document.getElementById("cfg-alpha-val");
+  const cfgBatchSize = document.getElementById("cfg-batch-size");
+  const cfgEpochs = document.getElementById("cfg-epochs");
+  const cfgDataset = document.getElementById("cfg-dataset");
+  const cfgYamlOutput = document.getElementById("cfg-yaml-output");
+  const cfgRecBox = document.getElementById("cfg-recommendation-box");
+  const copyYamlBtn = document.getElementById("copy-yaml-btn");
+  const downloadYamlBtn = document.getElementById("download-yaml-btn");
+  const resetConfigBtn = document.getElementById("reset-config-btn");
+
+  async function updateConfigYaml() {
+    if (!cfgYamlOutput) return;
+
+    cfgRVal.textContent = cfgLoraR.value;
+    cfgAlphaVal.textContent = cfgLoraAlpha.value;
+
+    try {
+      const res = await fetch("/api/config/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base_model: cfgBaseModel.value,
+          task: cfgTask.value,
+          stream_layers: cfgStreamLayers.checked,
+          quantization: cfgQuant.value,
+          lora_r: parseInt(cfgLoraR.value),
+          lora_alpha: parseInt(cfgLoraAlpha.value),
+          batch_size: parseInt(cfgBatchSize.value) || 1,
+          epochs: parseInt(cfgEpochs.value) || 3,
+          dataset_path: cfgDataset.value.trim() || "./data/train.jsonl"
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        cfgYamlOutput.textContent = data.yaml;
+        
+        if (data.warnings && data.warnings.length > 0) {
+          cfgRecBox.style.background = "rgba(245,158,11,0.12)";
+          cfgRecBox.style.borderColor = "rgba(245,158,11,0.35)";
+          cfgRecBox.innerHTML = `⚠️ <strong>Notice:</strong> ${data.warnings.join(" ")}`;
+        } else {
+          cfgRecBox.style.background = "rgba(16,185,129,0.12)";
+          cfgRecBox.style.borderColor = "rgba(16,185,129,0.35)";
+          cfgRecBox.innerHTML = `✨ <strong>Verified:</strong> ${data.tips.join(" ") || "Configuration valid for one-command training!"}`;
+        }
+      }
+    } catch (e) {
+      cfgYamlOutput.textContent = `# Error generating yaml: ${e.message}`;
+    }
+  }
+
+  [cfgBaseModel, cfgTask, cfgQuant, cfgStreamLayers, cfgBatchSize, cfgEpochs, cfgDataset].forEach(el => {
+    if (el) el.addEventListener("change", updateConfigYaml);
+  });
+
+  if (cfgLoraR) cfgLoraR.addEventListener("input", updateConfigYaml);
+  if (cfgLoraAlpha) cfgLoraAlpha.addEventListener("input", updateConfigYaml);
+
+  if (copyYamlBtn) {
+    copyYamlBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(cfgYamlOutput.textContent);
+      copyYamlBtn.textContent = "✓ Copied!";
+      setTimeout(() => { copyYamlBtn.textContent = "📋 Copy"; }, 1800);
+    });
+  }
+
+  if (downloadYamlBtn) {
+    downloadYamlBtn.addEventListener("click", () => {
+      const blob = new Blob([cfgYamlOutput.textContent], { type: "text/yaml" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "soup.yaml";
+      a.click();
+    });
+  }
+
+  if (resetConfigBtn) {
+    resetConfigBtn.addEventListener("click", () => {
+      cfgBaseModel.value = "meta-llama/Meta-Llama-3.1-8B-Instruct";
+      cfgTask.value = "sft";
+      cfgQuant.value = "nf4";
+      cfgStreamLayers.checked = true;
+      cfgLoraR.value = 16;
+      cfgLoraAlpha.value = 32;
+      cfgBatchSize.value = 1;
+      cfgEpochs.value = 3;
+      cfgDataset.value = "./data/train.jsonl";
+      updateConfigYaml();
+    });
+  }
+
+  // --- 7. Recipes Tab Renderer ---
   function renderRecipes(category = "all") {
     if (!recipesContainer) return;
     const filtered = category === "all" ? SOUP_RECIPES : SOUP_RECIPES.filter(r => r.category === category);
@@ -643,5 +743,6 @@ document.addEventListener("DOMContentLoaded", () => {
   checkOllama();
   loadCheckpoints();
   renderRecipes("all");
+  updateConfigYaml();
   recalculateVram();
 });

@@ -7,6 +7,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue" alt="Python Version">
+  <img src="https://github.com/programmerbaddie/soup-studio/actions/workflows/ci.yml/badge.svg" alt="CI Status">
   <img src="https://img.shields.io/badge/Ollama-Local%20Deployment-purple" alt="Ollama">
   <img src="https://img.shields.io/badge/Theme-OLED%20Midnight%20Obsidian-orange" alt="Theme">
   <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="License">
@@ -19,10 +20,11 @@
 
 **Soup Studio** is a visual workbench built for [Soup (`MakazhanAlpamys/Soup`)](https://github.com/MakazhanAlpamys/Soup). It brings a developer-friendly, dark-mode web experience to the entire post-training workflow:
 
-1. **🚀 1-Click Local Ollama Deployment:** Converts trained adapters into quantized GGUF models and registers them directly with your running local Ollama service.
-2. **📖 Soup Recipe Explorer:** Browse pre-configured training recipes (Chat, DeepSeek-style Reasoning, Qwen Coder, Tool-use) and copy single-command setups.
-3. **⚡ Interactive VRAM & Layer Streaming Estimator:** Visual gauge showing whether your model fits resident in GPU VRAM or requires Soup's signature `stream_layers: true` to run on 4GB laptop GPUs.
-4. **💬 In-Browser Test Playground:** Direct model inference testing inside the dashboard before team rollout.
+1. **🛠️ Visual Config Studio (`soup.yaml` Builder):** Configure training models, LoRA rank, quantization, and layer streaming visually with real-time schema validation and 1-click download.
+2. **🚀 1-Click Local Ollama Deployment:** Converts trained adapters into quantized GGUF models and registers them directly with your running local Ollama service.
+3. **📖 Soup Recipe Explorer:** Browse pre-configured training recipes (Chat, DeepSeek-style Reasoning, Qwen Coder, Tool-use) and copy single-command setups.
+4. **⚡ Interactive VRAM & Layer Streaming Estimator:** Visual gauge showing whether your model fits resident in GPU VRAM or requires Soup's signature `stream_layers: true` to run on 4GB laptop GPUs.
+5. **💬 In-Browser Test Playground:** Direct model inference testing inside the dashboard before team rollout.
 
 ---
 
