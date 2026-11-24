@@ -1,9 +1,73 @@
-// Soup Studio — Frontend Controller
+// Soup Studio — Frontend Controller (v2.0 Elevated)
 document.addEventListener("DOMContentLoaded", () => {
   // State
   let checkpoints = [];
   let selectedCheckpoint = null;
   let ollamaStatus = { online: false, version: null };
+
+  // Sample Soup Recipes
+  const SOUP_RECIPES = [
+    {
+      id: "llama3-instruct",
+      category: "chat",
+      name: "Llama-3.1 8B Instruct SFT",
+      desc: "Standard Supervised Fine-Tuning for conversational agents with high quality chat outputs.",
+      vram: "3.3 GB (Streamed)",
+      template: "chat",
+      command: "soup init --template chat --model meta-llama/Meta-Llama-3.1-8B-Instruct",
+      configPreview: "base_model: meta-llama/Meta-Llama-3.1-8B-Instruct\ntask: sft\nstream_layers: true\nlora_r: 16\nquantization: nf4"
+    },
+    {
+      id: "deepseek-reasoning",
+      category: "reasoning",
+      name: "DeepSeek-Zero Style Reasoning",
+      desc: "Reinforcement learning (GRPO / PPO) to teach models mathematical & logical step-by-step thinking.",
+      vram: "4.0 GB (Streamed)",
+      template: "reasoning",
+      command: "soup init --template reasoning --model Qwen/Qwen2.5-7B-Instruct",
+      configPreview: "base_model: Qwen/Qwen2.5-7B-Instruct\ntask: reasoning_grpo\nstream_layers: true\nreward_fn: exact_match"
+    },
+    {
+      id: "qwen-coder",
+      category: "code",
+      name: "Qwen 2.5 Coder 7B",
+      desc: "Specialized code generation & refactoring model fine-tuned on multi-turn code review datasets.",
+      vram: "3.8 GB (Streamed)",
+      template: "code",
+      command: "soup init --template code --model Qwen/Qwen2.5-Coder-7B-Instruct",
+      configPreview: "base_model: Qwen/Qwen2.5-Coder-7B-Instruct\ntask: sft\nstream_layers: true\ncontext_length: 8192"
+    },
+    {
+      id: "tool-calling",
+      category: "tools",
+      name: "Tool Calling & API Agent",
+      desc: "Fine-tune models to output strict JSON schemas and execute external functions reliably.",
+      vram: "3.2 GB (Streamed)",
+      template: "tool-calling",
+      command: "soup init --template tool-calling",
+      configPreview: "base_model: meta-llama/Meta-Llama-3.1-8B-Instruct\ntask: tool_calling\nschema_format: json_schema"
+    },
+    {
+      id: "medical-qa",
+      category: "chat",
+      name: "Medical Diagnostic QA",
+      desc: "Fine-tuned on PubMed & clinical notes for precise clinical summarization and terminology.",
+      vram: "3.5 GB (Streamed)",
+      template: "medical",
+      command: "soup init --template medical",
+      configPreview: "base_model: meta-llama/Meta-Llama-3.1-8B-Instruct\ntask: sft\nloss: selective_mask"
+    },
+    {
+      id: "multilingual-hindi",
+      category: "chat",
+      name: "Indic & Hinglish Multilingual",
+      desc: "Cross-lingual instruction tuning for high fluency in Hindi, Hinglish, and South Asian idioms.",
+      vram: "3.4 GB (Streamed)",
+      template: "chat",
+      command: "soup init --template chat --data ./data/indic-instruct.jsonl",
+      configPreview: "base_model: meta-llama/Meta-Llama-3.1-8B-Instruct\ntask: sft\nvocab_expansion: true"
+    }
+  ];
 
   // DOM Elements - Nav
   const navButtons = document.querySelectorAll(".nav-btn");
@@ -43,6 +107,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const ollamaStatusTitle = document.getElementById("ollama-status-title");
   const ollamaStatusDetail = document.getElementById("ollama-status-detail");
 
+  // DOM Elements - Recipes
+  const recipesContainer = document.getElementById("recipes-container");
+  const filterChips = document.querySelectorAll(".filter-chip");
+
   // DOM Elements - VRAM
   const vramPresetBtns = document.querySelectorAll(".preset-btn");
   const paramSlider = document.getElementById("param-slider");
@@ -79,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Output Tabs (Modelfile vs Logs)
   tabModelfileBtn.addEventListener("click", () => {
     tabModelfileBtn.classList.add("active");
     tabLogsBtn.classList.remove("active");
@@ -94,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
     logsView.style.display = "flex";
   });
 
-  // Target card selection
   targetCards.forEach(card => {
     card.addEventListener("click", () => {
       targetCards.forEach(c => c.classList.remove("active"));
@@ -143,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       checkpoints = data.checkpoints || [];
 
-      // If no real checkpoints found, add dummy demo ones for instant testing
       if (checkpoints.length === 0) {
         checkpoints = [
           {
@@ -228,7 +293,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Sliders and controls listener
   tempSlider.addEventListener("input", () => {
     tempDisplay.textContent = tempSlider.value;
     updateModelfilePreview();
@@ -245,12 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
     chatActiveModel.textContent = ollamaTagInput.value;
   });
 
-  // --- 5. Deploy Execution (Streaming Console) ---
+  // --- 5. Deploy Execution ---
   startDeployBtn.addEventListener("click", async () => {
     const modelTag = ollamaTagInput.value.trim() || "soup-model:latest";
     const modelfile = modelfileCode.textContent;
 
-    // Switch to terminal view
     tabLogsBtn.click();
     terminalOutput.textContent = `[SOUP STUDIO] Starting deployment pipeline for '${modelTag}'...\n`;
     deployProgressWrap.style.display = "flex";
@@ -259,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
     successBanner.style.display = "none";
     startDeployBtn.disabled = true;
 
-    // If Ollama is offline, run rich simulator so user can see complete pipeline
     if (!ollamaStatus.online) {
       await runSimulatedDeployment(modelTag);
       startDeployBtn.disabled = false;
@@ -300,7 +362,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Finish
       deployProgressFill.style.width = "100%";
       deployProgressLabel.textContent = "100%";
       terminalOutput.textContent += `\n[SUCCESS] Deployed '${modelTag}' to local Ollama!\n`;
@@ -332,7 +393,6 @@ document.addEventListener("DOMContentLoaded", () => {
     successBanner.style.display = "flex";
   }
 
-  // Success actions
   openTestChatBtn.addEventListener("click", () => {
     document.querySelector('.nav-btn[data-tab="chat"]').click();
   });
@@ -344,7 +404,60 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { copyCliCommandBtn.textContent = "📋 Copy CLI Command"; }, 2000);
   });
 
-  // --- 6. VRAM Estimator Tab ---
+  // --- 6. Recipes Tab Renderer ---
+  function renderRecipes(category = "all") {
+    if (!recipesContainer) return;
+    const filtered = category === "all" ? SOUP_RECIPES : SOUP_RECIPES.filter(r => r.category === category);
+
+    recipesContainer.innerHTML = filtered.map(r => `
+      <div class="recipe-card">
+        <div>
+          <div class="recipe-badge-row">
+            <span class="recipe-tag">${r.template.toUpperCase()}</span>
+            <span class="recipe-vram-tag">⚡ ${r.vram}</span>
+          </div>
+          <h3 class="recipe-name">${r.name}</h3>
+          <p class="recipe-desc">${r.desc}</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+          <button class="btn btn-sm btn-secondary copy-recipe-cmd" data-cmd="${r.command}" style="flex:1;">
+            📋 Copy CLI
+          </button>
+          <button class="btn btn-sm btn-primary view-recipe-yaml" data-id="${r.id}" style="flex:1;">
+            📄 View Config
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+    // Attach button listeners
+    document.querySelectorAll(".copy-recipe-cmd").forEach(btn => {
+      btn.addEventListener("click", () => {
+        navigator.clipboard.writeText(btn.dataset.cmd);
+        btn.textContent = "✓ Copied!";
+        setTimeout(() => { btn.textContent = "📋 Copy CLI"; }, 1800);
+      });
+    });
+
+    document.querySelectorAll(".view-recipe-yaml").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const recipe = SOUP_RECIPES.find(r => r.id === btn.dataset.id);
+        if (recipe) {
+          alert(`Soup Recipe Config (${recipe.name}):\n\n${recipe.configPreview}\n\nRun command:\n${recipe.command}`);
+        }
+      });
+    });
+  }
+
+  filterChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      filterChips.forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      renderRecipes(chip.dataset.filter);
+    });
+  });
+
+  // --- 7. VRAM Estimator Tab ---
   let selectedVram = 4.0;
   vramPresetBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -399,7 +512,7 @@ document.addEventListener("DOMContentLoaded", () => {
           verdictTitle.textContent = "Fits in GPU VRAM (Resident Mode)";
           verdictDesc.textContent = `This model configuration requires ~${data.total_needed_gb} GB, which comfortably fits inside your ${selectedVram} GB GPU. Standard fine-tuning will run at maximum speed!`;
         } else {
-          vramGaugeFill.style.backgroundColor = "var(--accent-amber)";
+          vramGaugeFill.style.backgroundColor = "var(--soup-amber)";
           vramVerdictBox.className = "verdict-box";
           verdictIcon.textContent = "⚡";
           verdictTitle.textContent = "Layer Streaming Required";
@@ -409,7 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {}
   }
 
-  // --- 7. Chat Playground ---
+  // --- 8. Chat Playground ---
   chatSendBtn.addEventListener("click", sendChatMessage);
   chatUserInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendChatMessage();
@@ -428,13 +541,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = chatUserInput.value.trim();
     if (!text) return;
 
-    // Append user bubble
     appendChatBubble("user", "You", text);
     chatUserInput.value = "";
 
     const activeModel = ollamaTagInput.value.trim() || "soup-model:latest";
 
-    // If Ollama is offline, provide helpful preview response
     if (!ollamaStatus.online) {
       setTimeout(() => {
         appendChatBubble(
@@ -486,5 +597,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Bootstrap ---
   checkOllama();
   loadCheckpoints();
+  renderRecipes("all");
   recalculateVram();
 });
