@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soup Studio — Visual Model Exporter & Deployment Hub</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🍲</div>
+        <div class="brand-text">
+          <span class="brand-title">Soup Studio</span>
+          <span class="brand-subtitle">Model Export & Deploy</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-tab="deploy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export & Deploy</span>
+        </button>
+
+        <button class="nav-btn" data-tab="vram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>VRAM Calculator</span>
+        </button>
+
+        <button class="nav-btn" data-tab="chat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Test Playground</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-status">
+        <div class="status-card">
+          <div class="status-header">
+            <span class="status-indicator" id="ollama-indicator"></span>
+            <span class="status-title" id="ollama-status-title">Ollama Checking...</span>
+          </div>
+          <div class="status-detail" id="ollama-status-detail">http://localhost:11434</div>
+        </div>
+        <div class="version-tag">Compatible with <code>soup-cli v0.78+</code></div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      
+      <!-- TAB 1: EXPORT & DEPLOY -->
+      <section id="tab-deploy" class="tab-panel active">
+        <header class="section-header">
+          <div>
+            <h1>Deploy Fine-Tuned Model</h1>
+            <p class="section-desc">Convert Soup adapters into production GGUF and register directly with your local Ollama daemon.</p>
+          </div>
+          <button class="btn btn-secondary" id="refresh-checkpoints-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Scan Checkpoints
+          </button>
+        </header>
+
+        <div class="grid-layout">
+          <!-- Left Column: Form & Options -->
+          <div class="config-col">
+            <!-- Step 1: Checkpoint selection -->
+            <div class="card">
+              <div class="card-step">Step 1</div>
+              <h2 class="card-title">Select Checkpoint</h2>
+              <div class="form-group">
+                <label for="checkpoint-select">Discovered Models & Adapters</label>
+                <select id="checkpoint-select" class="form-control">
+                  <option value="">Loading checkpoints...</option>
+                </select>
+              </div>
+              <div class="meta-box" id="checkpoint-meta">
+                <div class="meta-row"><span>Architecture:</span> <strong id="meta-arch">—</strong></div>
+                <div class="meta-row"><span>Base Model:</span> <strong id="meta-base">—</strong></div>
+                <div class="meta-row"><span>Type:</span> <span class="badge" id="meta-type">—</span></div>
+              </div>
+            </div>
+
+            <!-- Step 2: Deployment Target -->
+            <div class="card">
+              <div class="card-step">Step 2</div>
+              <h2 class="card-title">Deployment Target</h2>
+              <div class="targets-grid">
+                <div class="target-card active" data-target="ollama">
+                  <div class="target-icon">🦙</div>
+                  <div class="target-name">Ollama Local</div>
+                  <div class="target-desc">Auto-register model with Ollama service</div>
+                </div>
+                <div class="target-card" data-target="gguf">
+                  <div class="target-icon">⚡</div>
+                  <div class="target-name">GGUF Binary</div>
+                  <div class="target-desc">Export standalone file for LM Studio / llama.cpp</div>
+                </div>
+                <div class="target-card" data-target="hf">
+                  <div class="target-icon">🤗</div>
+                  <div class="target-name">Hugging Face</div>
+                  <div class="target-desc">Push LoRA adapter directly to HF Hub</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Ollama Config -->
+            <div class="card">
+              <div class="card-step">Step 3</div>
+              <h2 class="card-title">Model Configuration</h2>
+              <div class="form-group">
+                <label for="ollama-tag">Model Tag in Ollama</label>
+                <input type="text" id="ollama-tag" class="form-control" placeholder="my-soup-model:latest" value="soup-model:latest">
+              </div>
+
+              <div class="form-group">
+                <label for="template-family">Chat Template Family</label>
+                <select id="template-family" class="form-control">
+                  <option value="llama3">Llama 3 / 3.1 (<|start_header_id|>)</option>
+                  <option value="chatml">ChatML / Qwen (<|im_start|>)</option>
+                  <option value="mistral">Mistral ([INST])</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="system-prompt">System Prompt</label>
+                <textarea id="system-prompt" class="form-control" rows="3">You are a helpful and precise AI assistant fine-tuned with Soup.</textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="temperature">Temperature: <span id="temp-display">0.7</span></label>
+                  <input type="range" id="temperature" min="0" max="1.5" step="0.1" value="0.7" class="range-slider">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="top-p">Top-P: <span id="topp-display">0.9</span></label>
+                  <input type="range" id="top-p" min="0" max="1.0" step="0.05" value="0.9" class="range-slider">
+                </div>
+              </div>
+
+              <button class="btn btn-primary btn-block btn-large" id="start-deploy-btn">
+                <span>🚀 Build & Deploy to Ollama</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Live Modelfile & Console Output -->
+          <div class="output-col">
+            <div class="card h-full flex-col">
+              <div class="card-header-tabs">
+                <button class="tab-pill active" id="tab-modelfile-btn">Generated Modelfile</button>
+                <button class="tab-pill" id="tab-logs-btn">Deployment Terminal</button>
+              </div>
+
+              <!-- Modelfile Viewer -->
+              <div id="modelfile-view" class="code-container">
+                <pre><code id="modelfile-code"># Modelfile will generate automatically...</code></pre>
+              </div>
+
+              <!-- Terminal Logs -->
+              <div id="logs-view" class="terminal-container" style="display: none;">
+                <div class="terminal-bar">
+                  <span class="term-dot red"></span>
+                  <span class="term-dot yellow"></span>
+                  <span class="term-dot green"></span>
+                  <span class="term-title">deployment-stream</span>
+                </div>
+                <pre class="terminal-body" id="terminal-output">Ready to deploy. Click 'Build & Deploy to Ollama' to begin.</pre>
+                
+                <div class="progress-wrap" id="deploy-progress-wrap" style="display: none;">
+                  <div class="progress-bar"><div class="progress-fill" id="deploy-progress-fill" style="width: 0%"></div></div>
+                  <span class="progress-label" id="deploy-progress-label">0%</span>
+                </div>
+              </div>
+
+              <!-- Post-Deployment Success Action Card -->
+              <div class="success-banner" id="success-banner" style="display: none;">
+                <div class="success-icon">🎉</div>
+                <div class="success-info">
+                  <h4>Model Deployed Successfully!</h4>
+                  <p id="success-message">Model is now registered and ready to test in Ollama.</p>
+                  <div class="success-actions">
+                    <button class="btn btn-sm btn-primary" id="open-test-chat-btn">💬 Test in Chat Tab</button>
+                    <button class="btn btn-sm btn-secondary" id="copy-cli-command-btn">📋 Copy CLI Command</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: VRAM CALCULATOR -->
+      <section id="tab-vram" class="tab-panel">
+        <header class="section-header">
+          <div>
+            <h1>Interactive VRAM & Layer Streaming Estimator</h1>
+            <p class="section-desc">Estimate whether your target model fits directly in GPU VRAM or requires Soup's layer streaming feature.</p>
+          </div>
+        </header>
+
+        <div class="grid-layout">
+          <div class="config-col">
+            <div class="card">
+              <h2 class="card-title">Hardware & Model Parameters</h2>
+              
+              <div class="form-group">
+                <label>Available GPU VRAM: <strong id="vram-val-display" class="highlight">4 GB</strong></label>
+                <div class="preset-buttons">
+                  <button class="preset-btn active" data-vram="4">4 GB (Laptop)</button>
+                  <button class="preset-btn" data-vram="8">8 GB (RTX 3070)</button>
+                  <button class="preset-btn" data-vram="12">12 GB (RTX 3060)</button>
+                  <button class="preset-btn" data-vram="16">16 GB (T4 / V100)</button>
+                  <button class="preset-btn" data-vram="24">24 GB (3090/4090)</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Model Size (Parameters): <strong id="params-display" class="highlight">8 Billion</strong></label>
+                <input type="range" id="param-slider" min="1" max="70" step="1" value="8" class="range-slider">
+              </div>
+
+              <div class="form-group">
+                <label>Precision / Quantization</label>
+                <select id="quant-select" class="form-control">
+                  <option value="4" selected>4-bit (NF4 / QLoRA — Default for Soup)</option>
+                  <option value="8">8-bit (int8 quantization)</option>
+                  <option value="16">16-bit (bfloat16 / fp16 full precision)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Context Length: <strong id="context-display" class="highlight">4096 tokens</strong></label>
+                <input type="range" id="context-slider" min="1024" max="32768" step="1024" value="4096" class="range-slider">
+              </div>
+            </div>
+          </div>
+
+          <div class="output-col">
+            <div class="card">
+              <h2 class="card-title">Memory Footprint Analysis</h2>
+              
+              <div class="gauge-card">
+                <div class="gauge-header">
+                  <span>Required VRAM</span>
+                  <span id="vram-required-text">~4.8 GB</span>
+                </div>
+                <div class="gauge-bar">
+                  <div class="gauge-fill" id="vram-gauge-fill" style="width: 80%"></div>
+                </div>
+                <div class="gauge-markers">
+                  <span>0 GB</span>
+                  <span id="vram-limit-marker">Limit: 4.0 GB</span>
+                  <span>32 GB</span>
+                </div>
+              </div>
+
+              <div class="verdict-box" id="vram-verdict-box">
+                <div class="verdict-icon" id="verdict-icon">⚡</div>
+                <div class="verdict-body">
+                  <h3 id="verdict-title">Layer Streaming Required</h3>
+                  <p id="verdict-desc">This model exceeds your 4 GB VRAM limit. Enable <code>stream_layers: true</code> in your <code>soup.yaml</code> to stream layers sequentially without running out of memory.</p>
+                </div>
+              </div>
+
+              <div class="soup-callout">
+                <h4>💡 Why Soup is special</h4>
+                <p>Soup's <strong>layer streaming</strong> feeds frozen base model layers one by one into GPU VRAM. It allows fine-tuning an <strong>8B parameter model on a 4 GB laptop GPU</strong> (RTX 3050) without memory crashes!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TEST CHAT -->
+      <section id="tab-chat" class="tab-panel">
+        <header class="section-header">
+          <div>
+            <h1>Model Test Playground</h1>
+            <p class="section-desc">Instantly test inferences with your deployed fine-tuned model before team rollout.</p>
+          </div>
+          <button class="btn btn-secondary" id="clear-chat-btn">Clear Conversation</button>
+        </header>
+
+        <div class="chat-wrapper card">
+          <div class="chat-header-bar">
+            <span>Model: <code id="chat-active-model">soup-model:latest</code></span>
+            <span class="status-indicator online"></span>
+          </div>
+
+          <div class="chat-stream" id="chat-stream">
+            <div class="chat-bubble assistant">
+              <div class="bubble-header">🍲 Soup Assistant</div>
+              <div class="bubble-content">Hello! Your fine-tuned model is loaded and ready. Send a test prompt below to evaluate how it performs!</div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chat-user-input" placeholder="Type a message to test your fine-tuned model..." class="chat-input">
+            <button class="btn btn-primary" id="chat-send-btn">Send</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
