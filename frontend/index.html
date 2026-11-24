@@ -338,6 +338,21 @@
     </main>
   </div>
 
+  <!-- Recipe View Modal -->
+  <div class="modal-overlay" id="recipe-modal" style="display:none;">
+    <div class="card modal-card">
+      <div class="modal-header">
+        <h3 id="modal-recipe-title">Recipe Config</h3>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <pre class="code-container" id="modal-recipe-yaml" style="min-height:180px;"></pre>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-copy-yaml-btn">📋 Copy YAML</button>
+        <button class="btn btn-primary" id="modal-copy-cli-btn">🚀 Copy CLI Command</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/app.js"></script>
 </body>
 </html>

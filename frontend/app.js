@@ -439,14 +439,59 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Modal elements
+    const recipeModal = document.getElementById("recipe-modal");
+    const modalRecipeTitle = document.getElementById("modal-recipe-title");
+    const modalRecipeYaml = document.getElementById("modal-recipe-yaml");
+    const modalCloseBtn = document.getElementById("modal-close-btn");
+    const modalCopyYamlBtn = document.getElementById("modal-copy-yaml-btn");
+    const modalCopyCliBtn = document.getElementById("modal-copy-cli-btn");
+
+    let currentModalRecipe = null;
+
     document.querySelectorAll(".view-recipe-yaml").forEach(btn => {
       btn.addEventListener("click", () => {
         const recipe = SOUP_RECIPES.find(r => r.id === btn.dataset.id);
-        if (recipe) {
-          alert(`Soup Recipe Config (${recipe.name}):\n\n${recipe.configPreview}\n\nRun command:\n${recipe.command}`);
+        if (recipe && recipeModal) {
+          currentModalRecipe = recipe;
+          modalRecipeTitle.textContent = `${recipe.name} (YAML Config)`;
+          modalRecipeYaml.textContent = recipe.configPreview;
+          recipeModal.style.display = "flex";
         }
       });
     });
+
+    if (modalCloseBtn) {
+      modalCloseBtn.addEventListener("click", () => {
+        recipeModal.style.display = "none";
+      });
+    }
+
+    if (recipeModal) {
+      recipeModal.addEventListener("click", (e) => {
+        if (e.target === recipeModal) recipeModal.style.display = "none";
+      });
+    }
+
+    if (modalCopyYamlBtn) {
+      modalCopyYamlBtn.addEventListener("click", () => {
+        if (currentModalRecipe) {
+          navigator.clipboard.writeText(currentModalRecipe.configPreview);
+          modalCopyYamlBtn.textContent = "✓ YAML Copied!";
+          setTimeout(() => { modalCopyYamlBtn.textContent = "📋 Copy YAML"; }, 1800);
+        }
+      });
+    }
+
+    if (modalCopyCliBtn) {
+      modalCopyCliBtn.addEventListener("click", () => {
+        if (currentModalRecipe) {
+          navigator.clipboard.writeText(currentModalRecipe.command);
+          modalCopyCliBtn.textContent = "✓ Command Copied!";
+          setTimeout(() => { modalCopyCliBtn.textContent = "🚀 Copy CLI Command"; }, 1800);
+        }
+      });
+    }
   }
 
   filterChips.forEach(chip => {
