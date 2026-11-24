@@ -1,8 +1,10 @@
 <p align="center">
-  <h1 align="center">🍲 Soup Studio</h1>
-  <p align="center">
-    <strong>Visual Model Exporter, Recipe Hub & VRAM Estimator for <a href="https://github.com/MakazhanAlpamys/Soup">Soup</a></strong>
-  </p>
+  <img src="frontend/logo.svg" alt="Soup Studio Logo" width="120" height="120">
+</p>
+
+<h1 align="center">Soup Studio</h1>
+<p align="center">
+  <strong>Visual Model Exporter, Recipe Hub & VRAM Estimator for <a href="https://github.com/MakazhanAlpamys/Soup">Soup</a></strong>
 </p>
 
 <p align="center">
