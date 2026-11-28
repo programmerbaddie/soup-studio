@@ -1,0 +1,37 @@
+{
+  "name": "soup-studio",
+  "version": "1.0.0",
+  "description": "Visual Model Exporter, Recipe Hub & VRAM Estimator for Soup",
+  "main": "bin/cli.js",
+  "bin": {
+    "soup-studio": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "dev": "node bin/cli.js"
+  },
+  "keywords": [
+    "soup",
+    "soup-cli",
+    "llm",
+    "fine-tuning",
+    "ollama",
+    "gguf",
+    "lora",
+    "ai",
+    "vram-calculator"
+  ],
+  "author": "Khushi (programmerbaddie)",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/programmerbaddie/soup-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/programmerbaddie/soup-studio/issues"
+  },
+  "homepage": "https://github.com/programmerbaddie/soup-studio#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

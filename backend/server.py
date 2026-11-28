@@ -212,6 +212,12 @@ async def chat_with_ollama(req: TestChatRequest):
         return {"error": f"Chat request failed: {str(e)}"}
 
 
+@app.get("/api/health")
+async def health_check():
+    """Service health check endpoint."""
+    return {"status": "ok", "service": "soup-studio", "version": "1.0.0"}
+
+
 # Mount static files for web dashboard
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

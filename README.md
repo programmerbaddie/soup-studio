@@ -37,17 +37,21 @@ Designed with an **OLED Midnight Obsidian** color palette, warm Soup ember accen
 
 ## ⚡ Quick Start
 
-### 1. Clone & Install Dependencies
+### 🚀 1-Command Launch with NPX (Fastest)
+
+```bash
+npx soup-studio
+```
+> Automatically spins up the local backend and launches `http://localhost:8899` in your default browser!
+
+---
+
+### Or Run with Python
 
 ```bash
 git clone https://github.com/programmerbaddie/soup-studio.git
 cd soup-studio
 pip install -r backend/requirements.txt
-```
-
-### 2. Launch Soup Studio
-
-```bash
 python run_studio.py
 ```
 > The dashboard will automatically launch at `http://127.0.0.1:8899`.

@@ -11,8 +11,8 @@ backend_dir = Path(__file__).parent / "backend"
 sys.path.insert(0, str(backend_dir))
 
 def main():
-    port = 8899
-    host = "127.0.0.1"
+    port = int(os.environ.get("PORT", 8899))
+    host = os.environ.get("HOST", "127.0.0.1")
     url = f"http://{host}:{port}"
 
     print("=" * 65)
